@@ -1,6 +1,7 @@
 import 'package:code_snippet/elements/small_global_elements.dart';
 import 'package:code_snippet/management/codes_list.dart';
 import 'package:code_snippet/management/lanaguages_model.dart';
+import 'package:code_snippet/management/storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -244,7 +245,12 @@ class _AddSnippetPageState extends ConsumerState<AddSnippetPage> {
       onPressed: () {
         ref
             .read(allCodesPro.notifier)
-            .savingSnippet(titleController, codeController, cn);
+            .savingSnippet(
+              titleController,
+              codeController,
+              cn,
+              () => ref.read(stPro.notifier).savingStats(),
+            );
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: t.onPrimaryContainer,

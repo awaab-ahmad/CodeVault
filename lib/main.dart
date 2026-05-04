@@ -6,16 +6,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
-      statusBarColor: const Color(0x00000000),
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: const Color(0xFF0F0F14),
-      systemNavigationBarIconBrightness: .light,
-    ),
-  );
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: const Color(0x00000000),
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: const Color(0xFF0F0F14),
+        systemNavigationBarIconBrightness: .light,
+      ),
+    );
+  });
+  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(ProviderScope(child: const MyApp()));
 }
 

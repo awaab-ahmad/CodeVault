@@ -61,17 +61,17 @@ class SnippetManagement extends StateNotifier<SnippetModel> {
   }
 
   // this would be called at the time we move to next page
-  void assigningElements(int index) {
-    final r = ref.read(allCodesPro);
+  void assigningElements(int index, List<Map<String, dynamic>> ls) {
     state = state.copyWith(
       indexNo: index,
-      snippetTitle: r.allSnippets[index]['Title'],
-      lanFullForm: r.allSnippets[index]['languageFull'],
-      savingTime: r.allSnippets[index]['datedOn'],
-      code: r.allSnippets[index]['code'],
-      isPinned: r.allSnippets[index]['isPinned'],
+      snippetTitle: ls[index]['Title'],
+      lanFullForm: ls[index]['languageFull'],
+      savingTime: ls[index]['datedOn'],
+      code: ls[index]['code'],
+      isPinned: ls[index]['isPinned'],
       isNotEditing: true,
     );
+    if (kDebugMode) print(state.indexNo);
   }
 
   void assigningCode(CodeController tc) {

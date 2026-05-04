@@ -5,6 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// making the Fade and Transition to go together
+FadeTransition transition(AnimationController c, Widget child) {
+  return FadeTransition(
+    opacity: c,
+    child: SlideTransition(
+      position: Tween<Offset>(
+        begin: Offset(0, 0.2),
+        end: Offset(0, 0),
+      ).animate(CurvedAnimation(parent: c, curve: Curves.linear)),
+      child: child,
+    ),
+  );
+}
+
 Future bottomSheet(BuildContext cn, ColorScheme t, Widget child) {
   return showModalBottomSheet(
     barrierColor: const Color(0x33FFFFFF),

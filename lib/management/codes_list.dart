@@ -1,5 +1,6 @@
 // This is the file in which there is a list that is responsible for storing
 
+import 'package:code_snippet/Pages/front_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
@@ -92,11 +93,12 @@ class AllSnippetsManagement extends StateNotifier<AllSnippets> {
   }
 
   // making the Function for assigning the data
-  void savingSnippet(
+  Future<void> savingSnippet(
     TextEditingController title,
     CodeController code,
     BuildContext cn,
-  ) {
+    Function() fc,
+  ) async {
     if (title.text.trim().isNotEmpty) {
       if (code.text.trim().isNotEmpty) {
         DateTime dt = DateTime.now().toLocal();
@@ -112,6 +114,9 @@ class AllSnippetsManagement extends StateNotifier<AllSnippets> {
               'datedOn': format,
             }),
         );
+        fillingFilteredList();
+        await fc();
+        // ignore: use_build_context_synchronously
         Navigator.of(cn).pop();
       } else {
         if (kDebugMode) print('Code is empty');
@@ -121,10 +126,35 @@ class AllSnippetsManagement extends StateNotifier<AllSnippets> {
     }
   }
 
-  void deletingSnippet(int index) {
-    state = state.copyWith(
-      allSnippets: List.from(state.allSnippets)..removeAt(index),
-    );
+  Future<void> deletingSnippet(
+    int index,
+    BuildContext cn,
+    Function() fc,
+  ) async {
+    for (int i = 0; i < state.allSnippets.length; i++) {
+      if (state.filteredList[index]['Title'] == state.allSnippets[i]['Title']) {
+        if (kDebugMode) print('Deleting');
+        state = state.copyWith(
+          allSnippets: List.from(state.allSnippets)..removeAt(i),
+        );
+        await fc();
+      } else {
+        if (kDebugMode) print('Moving to next');
+        continue;
+      }
+    }
+
+    if (state.allSnippets.isEmpty) {
+      if (kDebugMode) print('Moving to the front Screen');
+      Navigator.of(cn).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (cn) => FrontPage()),
+        (Route<dynamic> route) => false,
+      );
+    } else {
+      if (kDebugMode) print('Moving 1 screen back');
+      fillingFilteredList();
+      Navigator.of(cn).pop();
+    }
   }
 
   void editingSnippetDetails(

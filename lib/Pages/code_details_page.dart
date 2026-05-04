@@ -1,6 +1,7 @@
 import 'package:code_snippet/elements/small_global_elements.dart';
 import 'package:code_snippet/management/codes_list.dart';
 import 'package:code_snippet/management/snippet_model.dart';
+import 'package:code_snippet/management/storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,7 +53,7 @@ class _MyWidgetState extends ConsumerState<CodeSnippetDetailsPage> {
                 const SizedBox(height: 10),
                 pinnedSection(h, t, p),
                 const Expanded(child: SizedBox()),
-                deleteButton(h),
+                deleteButton(h, context),
                 const SizedBox(height: 06),
               ],
             ),
@@ -281,12 +282,17 @@ class _MyWidgetState extends ConsumerState<CodeSnippetDetailsPage> {
     );
   }
 
-  ElevatedButton deleteButton(double h) {
+  ElevatedButton deleteButton(double h, BuildContext cn) {
     return ElevatedButton(
       onPressed: () {
         final ind = ref.watch(sniNotifierPro).indexNo;
-        ref.read(allCodesPro.notifier).deletingSnippet(ind);
-        Navigator.of(context).pop();
+        ref
+            .read(allCodesPro.notifier)
+            .deletingSnippet(
+              ind,
+              cn,
+              () => ref.read(stPro.notifier).savingStats(),
+            );
       },
       style: ElevatedButton.styleFrom(
         padding: const .symmetric(vertical: 10),

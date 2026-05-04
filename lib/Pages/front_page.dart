@@ -4,20 +4,45 @@ import 'package:code_snippet/Pages/code_details_page.dart';
 import 'package:code_snippet/elements/small_global_elements.dart';
 import 'package:code_snippet/management/codes_list.dart';
 import 'package:code_snippet/management/snippet_model.dart';
+import 'package:code_snippet/management/storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// ignore: must_be_immutable
-class FrontPage extends ConsumerWidget {
-  FrontPage({super.key});
-
-  CodeController pinnedText = CodeController(text: '');
+class FrontPage extends ConsumerStatefulWidget {
+  const FrontPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FrontPage> createState() => _FrontPageState();
+}
+
+class _FrontPageState extends ConsumerState<FrontPage>
+    with SingleTickerProviderStateMixin {
+  CodeController pinnedText = CodeController(text: '');
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(stPro.notifier)
+          .gettingData(
+            () => ref.read(allCodesPro.notifier).fillingFilteredList(),
+          );
+    });
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 900),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final h = MediaQuery.of(context).size.height;
     final w = MediaQuery.of(context).size.width;
     final t = Theme.of(context).colorScheme;
@@ -41,16 +66,24 @@ class FrontPage extends ConsumerWidget {
               snippetsAmount(t, p),
               const SizedBox(height: 5),
               Expanded(
-                child: p.allSnippets.isEmpty
-                    ? Center(child: noSnippetsPresent(h, w, t, context))
-                    : Column(
-                        children: [
-                          searchButton(t, h, context, ref),
-                          pinnedLine(t, h, ref, context),
-                          pinnedContainer(h, w, t, p, firstPinned),
-                          recentLine(t, h, context, ref),
-                          recentSection(t, w, h, p, ref),
-                        ],
+                child: p.filteredList.isEmpty
+                    ? Center(
+                        child: transition(
+                          _controller,
+                          noSnippetsPresent(h, w, t, context),
+                        ),
+                      )
+                    : transition(
+                        _controller,
+                        Column(
+                          children: [
+                            searchButton(t, h, context, ref),
+                            pinnedLine(t, h, ref, context),
+                            pinnedContainer(h, w, t, p, firstPinned),
+                            recentLine(t, h, context, ref),
+                            recentSection(t, w, h, p, ref),
+                          ],
+                        ),
                       ),
               ),
             ],
@@ -180,7 +213,7 @@ class FrontPage extends ConsumerWidget {
     Map<String, dynamic> pinned,
   ) {
     return Container(
-      height: h * 0.32,
+      // height: h * 0.32,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 08),
       width: w * 1.0,
       decoration: BoxDecoration(
@@ -271,78 +304,6 @@ class FrontPage extends ConsumerWidget {
                 gText('No Snippets Pinned', t.surface, 14, .w600),
               ],
             ),
-      // child: ListView.builder(
-      //   itemCount: pinned.length,
-      //   scrollDirection: .vertical,
-      //   itemBuilder: (context, index) {
-      //     final title = pinned['Title'];
-      //     final language = pinned['languageFull'];
-      //     final date = pinned['datedOn'];
-      //     final controller = CodeController(text: pinned['code']);
-      //     return pinned.isNotEmpty
-      //         ? Column(
-      //             crossAxisAlignment: .start,
-      //             children: [
-      //               Row(
-      //                 children: [
-      //                   gText(title, t.surface, 15, FontWeight.w600),
-      //                   const Expanded(child: SizedBox()),
-      //                   Container(
-      //                     height: h * 0.04,
-      //                     padding: const .symmetric(horizontal: 05),
-      //                     decoration: BoxDecoration(
-      //                       borderRadius: .circular(20),
-      //                       border: .all(color: t.secondary, width: .6),
-      //                       color: const Color(0x33A78BFA),
-      //                     ),
-      //                     child: Center(
-      //                       child: gText(
-      //                         language,
-      //                         t.surface,
-      //                         10,
-      //                         FontWeight.w600,
-      //                       ),
-      //                     ),
-      //                   ),
-      //                 ],
-      //               ),
-      //               gText(date, t.onSurface, 12, FontWeight.w500),
-      //               const SizedBox(height: 05),
-      //               Container(
-      //                 height: h * 0.17,
-      //                 clipBehavior: .antiAlias,
-      //                 decoration: BoxDecoration(
-      //                   color: t.onPrimary,
-      //                   borderRadius: .circular(20),
-      //                 ),
-      //                 child: SingleChildScrollView(
-      //                   child: CodeField(
-      //                     readOnly: true,
-      //                     textStyle: textFieldStyles(t.surface, 12, .w500),
-      //                     gutterStyle: GutterStyle(textAlign: .start),
-      //                     background: t.onPrimary,
-      //                     controller: controller,
-      //                   ),
-      //                 ),
-      //               ),
-      //               const SizedBox(height: 05),
-      //               Row(
-      //                 children: [
-      //                   Icon(
-      //                     Icons.copy_outlined,
-      //                     color: t.onSurface,
-      //                     size: h * 0.025,
-      //                   ),
-      //                   const SizedBox(width: 05),
-      //                   gText('Copy', t.onSurface, 12, FontWeight.w600),
-      //                 ],
-      //               ),
-      //               const SizedBox(height: 05),
-      //             ],
-      //           )
-      //         : gText('No Snippet \nPinnded', t.surface, 12, .w600);
-      //   },
-      // ),
     );
   }
 
@@ -391,28 +352,29 @@ class FrontPage extends ConsumerWidget {
                 final date = indVal['datedOn'];
                 Color? c;
                 Color? background;
-                switch(index) {
-                  case 0: 
-                  c = t.error;
-                  background = const Color(0x4DF7C948);
-                  break;
+                switch (index) {
+                  case 0:
+                    c = t.error;
+                    background = const Color(0x4DF7C948);
+                    break;
 
                   case 1:
-                  c =  t.onError;
-                  background = const Color(0x4D3B82F6);
-                  break;
-                  
-                  case 2: 
-                  c = t.onErrorContainer;
-                  background = const Color(0x4D34D399);
-                  break;
+                    c = t.onError;
+                    background = const Color(0x4D3B82F6);
+                    break;
 
+                  case 2:
+                    c = t.onErrorContainer;
+                    background = const Color(0x4D34D399);
+                    break;
                 }
                 return Padding(
                   padding: const .symmetric(vertical: 03),
                   child: ElevatedButton(
                     onPressed: () {
-                      r.read(sniNotifierPro.notifier).assigningElements(index);
+                      r
+                          .read(sniNotifierPro.notifier)
+                          .assigningElements(index, p.filteredList);
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           fullscreenDialog: true,
@@ -447,15 +409,10 @@ class FrontPage extends ConsumerWidget {
                               width: w * 0.12,
                               decoration: BoxDecoration(
                                 borderRadius: .circular(20),
-                                color: background
+                                color: background,
                               ),
                               child: Center(
-                                child: gText(
-                                  language,
-                                  c!,
-                                  12,
-                                  FontWeight.w600,
-                                ),
+                                child: gText(language, c!, 12, FontWeight.w600),
                               ),
                             ),
                           ],

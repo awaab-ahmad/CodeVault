@@ -63,11 +63,10 @@ class AllSnippetsPage extends ConsumerWidget {
         gText('Search Snippet', t.surface, 16, .w600),
         const Expanded(child: SizedBox()),
         Container(
-          alignment: .center,
-          height: 40,
-          width: 40,
           decoration: BoxDecoration(shape: .circle, color: t.primary),
           child: IconButton(
+            padding: const .all(0),
+            visualDensity: VisualDensity(vertical: -1),
             onPressed: () {
               FocusManager.instance.primaryFocus?.unfocus();
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -169,7 +168,9 @@ class AllSnippetsPage extends ConsumerWidget {
                 child: GestureDetector(
                   onTap: () {
                     FocusManager.instance.primaryFocus?.unfocus();
-                    ref.read(sniNotifierPro.notifier).assigningElements(index);
+                    ref
+                        .read(sniNotifierPro.notifier)
+                        .assigningElements(index, p.filteredList);
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
